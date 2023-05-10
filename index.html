@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>this is an trial for dropdown api</title>
+        <body>
+            <h1>Dropdowns for json data</h1>
+            <div>
+                <form>
+                    <div>
+                        <select id="district-select">
+                            <option value="">All Districts</option>
+                          </select>
+                    </div>
+                    <br><br>
+                    <div>
+                        <select id="college-select">
+                            <option value="">All Colleges</option>
+                          </select>
+                    </div>
+                    <br><br>
+                    <div>
+                        <input type="text" id="college-code" readonly>
+                    </div>
+                </form>
+            </div>
+            <script src = "app.js"></script>
+            <script>
+               
+  $(document).ready(function() {
+    // Fetch data from the server
+    $.get('/data', function(data) {
+      populateDistricts(data);
+    });
+
+    // Populate districts in the dropdown
+    function populateDistricts(data) {
+      var districts = [...new Set(data.map(item => item.District))];
+      districts.forEach(function(district) {
+        $('#district-select').append(`<option value="${district}">${district}</option>`);
+      });
+
+      // Trigger filtering when district is changed
+      $('#district-select').on('change', function() {
+        var selectedDistrict = $(this).val();
+        populateColleges(data, selectedDistrict);
+      });
+    }
+
+    // Populate colleges in the dropdown based on selected district
+    function populateColleges(data, district) {
+      $('#college-select').empty().append('<option value="">All Colleges</option>');
+
+      var filteredData = data.filter(item => item.District === district || district === '');
+      var colleges = [...new Set(filteredData.map(item => item.CollegeName))];
+      colleges.forEach(function(college) {
+        $('#college-select').append(`<option value="${college}">${college}</option>`);
+      });
+
+      // Trigger code population when college is selected
+      $('#college-select').on('change', function() {
+        var selectedCollege = $(this).val();
+        populateCollegeCode(data, selectedCollege);
+      });
+    }
+
+    // Populate CollegeCodeId in the read-only field based on selected college
+    function populateCollegeCode(data, college) {
+      var selectedCollege = data.find(item => item.CollegeName === college);
+      if (selectedCollege) {
+        $('#college-code').val(selectedCollege.CollegeCodeId);
+      } else {
+        $('#college-code').val('');
+      }
+    }
+  });
+</script>
+
+              </script>
+        </body>
+    </head>
+</html>
